@@ -76,8 +76,8 @@ func printResult(data map[string]*StationData) {
 }
 
 // Driver program
-func main() {
-	started := time.Now()
-	run()
-	fmt.Printf("%.6f", time.Since(started).Seconds())
-}
+// func main() {
+// 	started := time.Now()
+// 	run()
+// 	fmt.Printf("%.6f", time.Since(started).Seconds())
+// }
