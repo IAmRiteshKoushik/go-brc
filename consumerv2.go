@@ -51,4 +51,6 @@ func consumerV2(input chan []byte, output chan map[string]*StationData, wg *sync
 			}
 		}
 	}
+
+	output <- data
 }
