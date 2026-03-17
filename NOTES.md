@@ -70,4 +70,18 @@ buffer.
 This time, the average is coming out to be `17.3 seconds` across 4 tests. Copying 
 indeed has a certain overhead to it.
 
-## Attempt 9 - Actually useful consumers (leftover logic to process stuff)
+## Attempt 9 - Actually useful buffers (leftover logic to process stuff)
+
+In this iteration, I was fixing the issue that the size of the buffer is fixed 
+but then, the problem comes when lines transported to the consumer might be 
+cut from the middle. 
+
+In order to handle this, I am going to only send complete lines by checking for 
+newline characters from the end. After checking for them, I will only send the 
+part of the buffer that's fully valid and keep the leftover in a separate 
+buffer that will be pre-pend to the next batch of data being sent to the channel.
+
+In this approach, copying seems to introduce minimal overhead and my timing is 
+still around `17.4 seconds`
+
+## Attempt 10 - Evolving the Consumer to make it actually useful
