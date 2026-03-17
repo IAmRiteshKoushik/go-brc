@@ -31,14 +31,4 @@ For generating data, checkout [gunnarmorling/1brc](https://github.com/gunnarmorl
 
 > System Specs: AMD Ryzen5 3500U Radeon Vega Mobile Gfx 2.1GHz (16GB RAM) (no GPU)
 
-**Attempt 01**
-In the first attempt, I have tried a brute force approach. The code for this can 
-be found in `attempt_1.go`. The program ran for 394.14 seconds.
-
-**Attempt 02**
-In this attempt, I have removed the code to actually compute any data and have 
-just focused on testing our various approaches to optimize the file reading 
-capacity. Have switched between the following :
-1. Basic Scanner
-2. Buffered Scanner
-3. Bufio Reader
+Summary of all attempts available in NOTES.md
