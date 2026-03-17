@@ -2,7 +2,7 @@ This is very hardware dependent performance. If you are on better hardware,
 then you can extract better results. More cores, will allow you to utilize the 
 CPU and the RAM better. If you have GPUs then you'll be much much faster.
 
-# Attempt 1 - Brute force
+## Attempt 1 - Brute force
 
 Naively read everything and process them in a hashmap. Took 600+ seconds.
 
@@ -39,13 +39,15 @@ This one is giving good results.
 5. Buffer `512 x 512 (256 KB)` - 12.5s -> optimal
 6. Buffer `1024 x 1024 (1 MB)` - 15s
 
-## Attempt 6 - file.Read() with Goroutines for communication
+## Attempt 7 - file.Read() with single Goroutine
 
 In this one, I am extracting all the data out through a channel. There is a 
 slight spike in performance. My 12.5 seconds reading went upto 15.3s due to 
 communication overhead.
 
 For a single goroutine - 15.33s
+
+## Attempt 8 - file.Read() with multile goroutines as consumers
 
 The consumer might read inconsistent data. This is because slices are reference 
 types and when you are sending a slice into a channel, you are not sending a copy 
@@ -62,4 +64,10 @@ The problem, is the consuemr is still trying to process some parts of the data,
 and the producer just overwrote the buffer with new data from the file.
 
 This can be fixed through `copying`. It creates an snapshot of the data before 
-transmission. The consumer gets a private copy of the info.
+transmission. The consumer gets a private copy of the info instead of a shared 
+buffer.
+
+This time, the average is coming out to be `17.3 seconds` across 4 tests. Copying 
+indeed has a certain overhead to it.
+
+## Attempt 9 - Actually useful consumers (leftover logic to process stuff)
