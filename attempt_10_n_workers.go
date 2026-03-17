@@ -1,0 +1,107 @@
+package main
+
+import (
+	"io"
+	"os"
+	"sync"
+)
+
+func attemptTen(N_WORKERS, CHANNEL_BUFFER int) {
+	inputChannels := make([]chan []byte, N_WORKERS)
+	outputChannels := make([]chan map[string]*StationData, N_WORKERS)
+
+	var wg sync.WaitGroup
+	wg.Add(N_WORKERS)
+
+	// Spawn workers
+	for i := range N_WORKERS {
+		input := make(chan []byte, CHANNEL_BUFFER)
+		output := make(chan map[string]*StationData)
+
+		go consumerV2(input, output, &wg)
+
+		inputChannels[i] = input
+		outputChannels[i] = output
+	}
+
+	// Start file processing
+	file, err := os.Open("measurements.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	// readBuffer best size is already determined to be 512 * 512
+	readBuffer := make([]byte, 51252)
+	leftoverBuffer := make([]byte, 1024) // sufficient size of pending buffers
+	leftoverSize := 0
+	currentWorker := 0
+
+	for {
+		// You have the number of bytes read, despite the buffer size. You will not
+		// always use the entire buffer
+		n, err := file.Read(readBuffer)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			panic(err)
+		}
+
+		m := 0
+		// Finding the last newline character and capturing its index
+		for i := n - 1; i >= 0; i-- {
+			if readBuffer[i] == 10 {
+				m = i
+				break
+			}
+		}
+
+		data := make([]byte, m+leftoverSize)
+		copy(data, leftoverBuffer[:leftoverSize])
+		copy(data[leftoverSize:], readBuffer[:m])
+		copy(leftoverBuffer, readBuffer[m+1:n]) // prep for next iteration
+		leftoverSize = n - m - 1
+
+		inputChannels[currentWorker] <- data
+
+		currentWorker++
+		if currentWorker >= N_WORKERS {
+			currentWorker = 0
+		}
+	}
+
+	// close the input channels, make the workers leave their processing loop
+	// This is fine to do as all reading is done.
+	for i := range N_WORKERS {
+		close(inputChannels[i])
+	}
+
+	// Wait for all workers to finish processing if they are still in transit
+	wg.Wait()
+	for i := range N_WORKERS {
+		close(outputChannels[i])
+	}
+
+	// Now we can start aggregating
+	data := make(map[string]*StationData)
+	for i := range N_WORKERS {
+		// Extract stuff out of channels synchronously
+		for station, stationData := range <-outputChannels[i] {
+			// Check for existance of record
+			if _, ok := data[station]; !ok {
+				data[station] = stationData
+			} else {
+				// If record already exists, then handle the comparison and increments
+				if stationData.Min < data[station].Min {
+					data[station].Min = stationData.Min
+				}
+				if stationData.Max > data[station].Max {
+					data[station].Max = stationData.Min
+				}
+				data[station].Sum += stationData.Sum
+				data[station].Count += stationData.Count
+			}
+		}
+	}
+}
