@@ -2,23 +2,12 @@ package main
 
 import (
 	"bufio"
-	"fmt"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
-	"time"
 )
 
-type StationData struct {
-	Name  string
-	Min   float64
-	Max   float64
-	Sum   float64
-	Count int
-}
-
-func run() {
+func attemptOne() {
 	data := make(map[string]*StationData)
 
 	file, err := os.Open("measurements.txt")
@@ -40,6 +29,7 @@ func run() {
 		}
 
 		station, ok := data[name]
+		// If the station does not exist, create a new station
 		if !ok {
 			data[name] = &StationData{name, temperature, temperature, temperature, 1}
 		} else {
@@ -56,28 +46,3 @@ func run() {
 	}
 	printResult(data)
 }
-
-func printResult(data map[string]*StationData) {
-	result := make(map[string]*StationData, len(data))
-	keys := make([]string, 0, len(data))
-	for _, v := range data {
-		keys = append(keys, v.Name)
-		result[v.Name] = v
-	}
-	sort.Strings(keys)
-
-	print("{")
-	for _, k := range keys {
-		v := result[k]
-		// Printing <station-name>=min/avg/max
-		fmt.Printf("%s=%.1f/%.1f/%.1f, ", k, v.Min, v.Sum/float64(v.Count), v.Max)
-	}
-	print("}\n")
-}
-
-// Driver program
-// func main() {
-// 	started := time.Now()
-// 	run()
-// 	fmt.Printf("%.6f", time.Since(started).Seconds())
-// }
