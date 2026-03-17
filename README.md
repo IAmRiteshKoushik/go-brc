@@ -1,5 +1,16 @@
 # 1 Billion Rows Challenge
 
+## Setup
+
+Generate all the data.
+```py
+python3 -m create_measurements.py
+
+# It will be in measurements.txt
+```
+
+## Introduction
+
 An attempt at the 1 billion rows challenge in Golang. (inspired from Primeagen's 
 article reads)
 
