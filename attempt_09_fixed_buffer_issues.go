@@ -22,7 +22,7 @@ func attemptNine() {
 
 	// Read the file in chunks and send it via a channel to consumer
 	for {
-		_, err := file.Read(readBuffer)
+		n, err := file.Read(readBuffer)
 		if err == io.EOF {
 			return
 		}
@@ -50,7 +50,7 @@ func attemptNine() {
 
 		// Leftover buffer for the next iteration with incomplete byte set
 		copy(leftoverBuffer, readBuffer[m+1:bufferSize])
-		leftoverSize = bufferSize - m - 1
+		leftoverSize = n - m - 1
 
 		channel <- data
 	}
