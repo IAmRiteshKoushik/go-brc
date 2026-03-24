@@ -15,6 +15,14 @@ type StationData struct {
 	Count int
 }
 
+type StationDataV2 struct {
+	Name  string
+	Min   int
+	Max   int
+	Sum   int
+	Count int
+}
+
 func main() {
 	// Profiling instruments
 	f, err := os.Create("cpu_profile.prof")
@@ -97,6 +105,12 @@ func main() {
 		workerCount := 10
 		bufferSize := 100
 		attemptTwelve(workerCount, bufferSize)
+		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
+	case "13":
+		start := time.Now()
+		workerCount := 10
+		bufferSize := 100
+		attempThirteen(workerCount, bufferSize)
 		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
 	}
 }
