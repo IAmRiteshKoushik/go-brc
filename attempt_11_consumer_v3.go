@@ -6,7 +6,7 @@ import (
 	"sync"
 )
 
-func attemptTen(workers, chanBufSize int) {
+func attemptEleven(workers, chanBufSize int) {
 	inputChannels := make([]chan []byte, workers)
 	outputChannels := make([]chan map[string]*StationData, workers)
 
@@ -18,7 +18,7 @@ func attemptTen(workers, chanBufSize int) {
 		input := make(chan []byte, chanBufSize)
 		output := make(chan map[string]*StationData, 1)
 
-		go consumerV2(input, output, &wg)
+		go consumerV3(input, output, &wg)
 
 		inputChannels[i] = input
 		outputChannels[i] = output
