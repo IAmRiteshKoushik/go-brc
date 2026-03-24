@@ -5,8 +5,8 @@ import (
 	"sort"
 )
 
-func printResult(data map[string]*StationData) {
-	result := make(map[string]*StationData, len(data))
+func printResult(data map[string]*StationDataV2) {
+	result := make(map[string]*StationDataV2, len(data))
 	keys := make([]string, 0, len(data))
 	for _, v := range data {
 		keys = append(keys, v.Name)
@@ -21,7 +21,7 @@ func printResult(data map[string]*StationData) {
 		v := result[k]
 
 		// Printing <station-name>=min/avg/max
-		fmt.Printf("%s=%.1f/%.1f/%.1f\n", k, v.Min, v.Sum/float64(v.Count), v.Max)
+		fmt.Printf("%s=%.1f/%.1f/%.1f\n", k, v.Min/10.0, (v.Sum/v.Count)/10.0, v.Max/10.0)
 	}
 	print("}\n")
 }
