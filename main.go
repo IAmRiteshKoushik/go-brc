@@ -63,5 +63,11 @@ func main() {
 			attemptNine()
 			fmt.Printf("%0.6f\n", time.Since(start).Seconds())
 		}
+	case "ten":
+		for range 4 {
+			start := time.Now()
+			attemptTen(1, 1) // a grid test is supposed to come here
+			fmt.Printf("%0.6f\n", time.Since(start).Seconds())
+		}
 	}
 }
