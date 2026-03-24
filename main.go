@@ -64,25 +64,12 @@ func main() {
 			fmt.Printf("%0.6f\n", time.Since(start).Seconds())
 		}
 	case "10":
-		buffers := []int{5, 10, 15, 25, 50, 100}
-		workers := []int{5, 10, 15, 25, 50, 100}
-
-		fmt.Printf("Workers\\Buffers")
-		for _, b := range buffers {
-			fmt.Printf("\t%d", b)
-		}
-		fmt.Println()
-
-		// Grid test
-		for _, w := range workers {
-			fmt.Printf("%d", w)
-			for _, b := range buffers {
-				start := time.Now()
-				attemptTen(w, b)
-				fmt.Printf("\t%0.2f", time.Since(start).Seconds())
-			}
-			fmt.Println()
-		}
+		start := time.Now()
+		// Workers, Buffer
+		workerCount := 5
+		bufferSize := 10
+		attemptTen(workerCount, bufferSize)
+		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
 	case "11":
 	case "12":
 	}
