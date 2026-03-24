@@ -78,6 +78,7 @@ func attemptTen(N_WORKERS, CHANNEL_BUFFER int) {
 	}
 
 	// Wait for all workers to finish processing if they are still in transit
+	// Once that is done, then close the output channels too
 	wg.Wait()
 	for i := range N_WORKERS {
 		close(outputChannels[i])
