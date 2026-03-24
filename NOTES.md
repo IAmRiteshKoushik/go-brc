@@ -106,35 +106,31 @@ Going forward, these two are the only configurations to be tested.
 ## Attempt 11 - Custom Byte Split
 
 A custom byte split function lead to the creation of `consumerV3`. This brought
-down the timing from 77 to 64.5s
+down the timing from 77s. Although, the behavior is slightly erratic, here are 
+the obeservations
 
-```go
-package main
+Iteration 1: 50.56s
+Iteration 2: 50.33s
+Iteration 3: 52.00s
+Iteration 4: 57.90s
+Iteration 5: 56.68s
+Iteration 6: 59.14s
+Iteration 7: 54.58s
+Iteration 8: 59.09s
 
-func ParseLine(line, nameBuffer, tempBuffer []byte) (nameSize, tempSize int) {
-	// 59 is the ASCII character for ";"
-	// 10 is the ASCII character for "\n"
-	total := len(line)
-	i := 0
+I have come to realize that my CPU is heating up and a thermal throttling is 
+kicking in. Between iterations 6 and 7, I waited a little and I could see a drop 
+in the timing again.
 
-	// Determine the name size and  populate the corresponding byte slices
-	j := 0
-	for line[i] != 59 {
-		nameBuffer[j] = line[i]
-		i++
-		j++
-	}
+So, I would like to consider the median value in this observation here that is 
+55 seconds.
 
-	i++ // skip the semi-colon
+---
 
-	// Determine temperature size and populate the corresponding byte slices
-	k := 0
-	for i < total && line[i] != 10 {
-		tempBuffer[k] = line[i]
-		i++
-		k++
-	}
+The justification for this performance gain is that now I am using a custom 
+byte splitting function. This is allowing me to re-use a pre-defined byte 
+buffer and save up on needless memory allocations.
 
-	return j, k // sizes
-}
-```
+## Attempt 12 - Custom Byte Hash using FNV Hash
+
+

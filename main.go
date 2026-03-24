@@ -80,7 +80,7 @@ func main() {
 	case "10":
 		start := time.Now()
 		// Workers, Buffer
-		workerCount := 20
+		workerCount := 10
 		bufferSize := 100
 		attemptTen(workerCount, bufferSize)
 		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
@@ -88,7 +88,7 @@ func main() {
 	case "11":
 		start := time.Now()
 		// Workers, Buffer
-		workerCount := 20
+		workerCount := 10
 		bufferSize := 100
 		attemptEleven(workerCount, bufferSize)
 		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
