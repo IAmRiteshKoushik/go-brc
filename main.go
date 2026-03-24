@@ -93,5 +93,10 @@ func main() {
 		attemptEleven(workerCount, bufferSize)
 		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
 	case "12":
+		start := time.Now()
+		workerCount := 10
+		bufferSize := 100
+		attemptTwelve(workerCount, bufferSize)
+		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
 	}
 }

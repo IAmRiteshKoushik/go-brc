@@ -131,6 +131,49 @@ The justification for this performance gain is that now I am using a custom
 byte splitting function. This is allowing me to re-use a pre-defined byte 
 buffer and save up on needless memory allocations.
 
-## Attempt 12 - Custom Byte Hash using FNV Hash
+## Attempt 12 - Custom Byte Hash using FNV Hash to remove string allocation
 
+In this attempt, I am going to reduce the amount of data that I store in the 
+hashmap. This time instead of using a string as a key, I am going to use a uint64
+via FNV hashing. his is because, I can hash the bytes and generate this pretty easily.
 
+Now, coming to the benefits of it: 
+1. `map[string]any` -> 16 bytes of key space + N variable bytes based on size
+    This is because a string consists of the actual data and a StringHeader
+    The StringHeader contains a uintptr (8 bytes) and len (8 bytes)
+2. `map[uint64]any` -> 8 bytes of key space (fixed)
+
+In addition to this, lookups on the hashmap become faster. This is due to the 
+fact that I am using a 64-bit architecture system. So, when I have to has the 
+key to look it up in the hashmap, it fits within one register and the hashing 
+is done in a single cycle.
+
+Internally, a hashmap in Go uses buckets and each bucket contains 8 entries. 
+This is to handle collision. I am not going into depth of why this is done 
+the way it is.
+
+However, what is interesting to note is that hashing is only one step of the 
+lookup and this locates the apt bucket. Now, you need to scan each element of the 
+bucket to determine a match.
+
+This is done using the `XOR` operator. If fully matched then 0 is returned. Now, 
+because the entire key fits into a single register, it takes the CPU a single 
+cycle to compare the lookup-key against the 8 candidates of the bucket.
+
+Results:
+Iteration 1: 38.96s
+Iteration 2: 40.12s
+Iteration 3: 38.18s
+Iteration 4: 38.64s
+
+So the average time comes out to 38.8s
+
+## Attempt 13 - Custom Float Parser
+
+## Attempt 14 - Custom Scanner
+
+## Attempt 15 - Swiss Map and DJB2 Hashing
+
+## Attempt 16 - Reducing Channel Communication Overhead with Worker Reading
+
+## Attempt 17 - Delete the Name and Temperature Buffers
