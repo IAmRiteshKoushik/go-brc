@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime/pprof"
 	"time"
 )
 
@@ -15,6 +16,19 @@ type StationData struct {
 }
 
 func main() {
+	// Profiling instruments
+	f, err := os.Create("cpu_profile.prof")
+	if err != nil {
+		panic(err)
+	}
+	defer f.Close()
+
+	if err := pprof.StartCPUProfile(f); err != nil {
+		panic(err)
+	}
+	defer pprof.StopCPUProfile()
+
+	// Setup instruments
 	flag := os.Args[1]
 	switch flag {
 	case "1":
@@ -66,11 +80,18 @@ func main() {
 	case "10":
 		start := time.Now()
 		// Workers, Buffer
-		workerCount := 5
-		bufferSize := 10
+		workerCount := 20
+		bufferSize := 100
 		attemptTen(workerCount, bufferSize)
 		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
+	// 20 x 100 is the configurations to test
 	case "11":
+		start := time.Now()
+		// Workers, Buffer
+		workerCount := 20
+		bufferSize := 100
+		attemptEleven(workerCount, bufferSize)
+		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
 	case "12":
 	}
 }
