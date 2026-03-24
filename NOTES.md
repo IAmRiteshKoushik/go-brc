@@ -85,3 +85,56 @@ In this approach, copying seems to introduce minimal overhead and my timing is
 still around `17.4 seconds`
 
 ## Attempt 10 - Evolving the Consumer to make it actually useful
+
+The grid test was failing initially due to some bugs in the code. Mostly it is 
+a circular wait problem where I have goroutines waiting to read from a channel
+but there is a wait group that is not letting them read.
+
+Upon fixing that, and setting up item sizes with parallel works, the following 
+is the grid test
+
+Workers/Items   5    10   20   50   100
+---------------------------------------
+5               165  161  149  142  145
+10              151  100  97   83   83
+20              102  101  96   93   77
+50              108  103  106  105  108
+
+So, it's obvious that the best configuration is coming in 10 x 100 and 20 x 100
+Going forward, these two are the only configurations to be tested.
+
+## Attempt 11 - Custom Byte Split
+
+A custom byte split function lead to the creation of `consumerV3`. This brought
+down the timing from 77 to 64.5s
+
+```go
+package main
+
+func ParseLine(line, nameBuffer, tempBuffer []byte) (nameSize, tempSize int) {
+	// 59 is the ASCII character for ";"
+	// 10 is the ASCII character for "\n"
+	total := len(line)
+	i := 0
+
+	// Determine the name size and  populate the corresponding byte slices
+	j := 0
+	for line[i] != 59 {
+		nameBuffer[j] = line[i]
+		i++
+		j++
+	}
+
+	i++ // skip the semi-colon
+
+	// Determine temperature size and populate the corresponding byte slices
+	k := 0
+	for i < total && line[i] != 10 {
+		tempBuffer[k] = line[i]
+		i++
+		k++
+	}
+
+	return j, k // sizes
+}
+```
