@@ -1,6 +1,6 @@
-This is very hardware dependent performance. If you are on better hardware, 
-then you can extract better results. More cores, will allow you to utilize the 
-CPU and the RAM better. If you have GPUs then you'll be much much faster.
+This is very hardware dependent. If you are on better hardware, 
+you can achieve better results. More cores will allow you to utilize the 
+CPU and RAM better. If you have GPUs then you'll be much faster.
 
 ## Attempt 1 - Brute force
 
@@ -42,12 +42,12 @@ This one is giving good results.
 ## Attempt 7 - file.Read() with single Goroutine
 
 In this one, I am extracting all the data out through a channel. There is a 
-slight spike in performance. My 12.5 seconds reading went upto 15.3s due to 
+slight spike in performance. My 12.5 seconds reading went up to 15.3s due to 
 communication overhead.
 
 For a single goroutine - 15.33s
 
-## Attempt 8 - file.Read() with multile goroutines as consumers
+## Attempt 8 - file.Read() with multiple goroutines as consumers
 
 The consumer might read inconsistent data. This is because slices are reference 
 types and when you are sending a slice into a channel, you are not sending a copy 
@@ -57,10 +57,10 @@ Here's the problem it causes:
 `Producer`: Reads data from a file into a reusable buffer
 `Producer` send the buffer into the channel
 `Consumer` receives the buffer and starts reading from it
-`Producer` simulatenously moves to the next iteration, flushes the buffer and 
+`Producer` simultaneously moves to the next iteration, flushes the buffer and 
 reloads it with new file.Read(buffer)
 
-The problem, is the consuemr is still trying to process some parts of the data, 
+The problem is the consumer is still trying to process some parts of the data, 
 and the producer just overwrote the buffer with new data from the file.
 
 This can be fixed through `copying`. It creates an snapshot of the data before 
@@ -79,7 +79,7 @@ cut from the middle.
 In order to handle this, I am going to only send complete lines by checking for 
 newline characters from the end. After checking for them, I will only send the 
 part of the buffer that's fully valid and keep the leftover in a separate 
-buffer that will be pre-pend to the next batch of data being sent to the channel.
+buffer that will be prepended to the next batch of data being sent to the channel.
 
 In this approach, copying seems to introduce minimal overhead and my timing is 
 still around `17.4 seconds`
@@ -90,7 +90,7 @@ The grid test was failing initially due to some bugs in the code. Mostly it is
 a circular wait problem where I have goroutines waiting to read from a channel
 but there is a wait group that is not letting them read.
 
-Upon fixing that, and setting up item sizes with parallel works, the following 
+Upon fixing that, and setting up item sizes with parallel tasks, the following 
 is the grid test
 
 Workers/Items   5    10   20   50   100
@@ -107,7 +107,7 @@ Going forward, these two are the only configurations to be tested.
 
 A custom byte split function lead to the creation of `consumerV3`. This brought
 down the timing from 77s. Although, the behavior is slightly erratic, here are 
-the obeservations
+the observations
 
 Iteration 1: 50.56s
 Iteration 2: 50.33s
@@ -135,7 +135,7 @@ buffer and save up on needless memory allocations.
 
 In this attempt, I am going to reduce the amount of data that I store in the 
 hashmap. This time instead of using a string as a key, I am going to use a uint64
-via FNV hashing. his is because, I can hash the bytes and generate this pretty easily.
+via FNV hashing. This is because I can hash the bytes and generate this pretty easily.
 
 Now, coming to the benefits of it: 
 1. `map[string]any` -> 16 bytes of key space + N variable bytes based on size
@@ -144,7 +144,7 @@ Now, coming to the benefits of it:
 2. `map[uint64]any` -> 8 bytes of key space (fixed)
 
 In addition to this, lookups on the hashmap become faster. This is due to the 
-fact that I am using a 64-bit architecture system. So, when I have to has the 
+fact that I am using a 64-bit architecture system. So, when I have to hash the 
 key to look it up in the hashmap, it fits within one register and the hashing 
 is done in a single cycle.
 
@@ -153,7 +153,7 @@ This is to handle collision. I am not going into depth of why this is done
 the way it is.
 
 However, what is interesting to note is that hashing is only one step of the 
-lookup and this locates the apt bucket. Now, you need to scan each element of the 
+lookup and this locates the right bucket. Now, you need to scan each element of the 
 bucket to determine a match.
 
 This is done using the `XOR` operator. If fully matched then 0 is returned. Now, 
@@ -183,20 +183,20 @@ The mean timing came down to 31.5s
 Next up, according to the flamegraph, a lot of time gets wasted in the default 
 scanner being used. This is the next site of optimization.
 
-The scanner has mostly become redundant and its existance is causing unnecessary 
-allocation on the heap. Also, the allocation happens for every line on input.
+The scanner has mostly become redundant and its existence is causing unnecessary 
+allocation on the heap. Also, the allocation happens for every line of input.
 
-Here, the implementation remains straight forward. The idea is inspired from 
+Here, the implementation remains straightforward. The idea is inspired from 
 the parseLine() function. Previously, we were working with \n and then splitting 
 around ;. Now, we are doing the same but also skipping the decimal point and 
 returning the index of the next spot to start reading
 
 The GC pressure is much lower now as we are managing the reading index ourselves 
-as it is just an integer. Prevously the scanner was maintaining internal state  
+as it is just an integer. Previously, the scanner was maintaining internal state 
 on the heap that had to be deallocated, now we are just overwriting.
 
-The observations are as follows: 27.12, 27.14, 27.97, 27.50. So we can say that 
-27.5 is a good estimate to play with.
+The observations are as follows: 27.12, 27.14, 27.97, 27.50. So we can estimate 
+around 27.5 seconds.
 
 ## Attempt 15 - Reducing Channel Communication Overhead with Worker Reading
 
