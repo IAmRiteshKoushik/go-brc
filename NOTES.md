@@ -170,10 +170,34 @@ So the average time comes out to 38.8s
 
 ## Attempt 13 - Custom Float Parser
 
+Every temperature is a single decimal float number so there is no need to use 
+ParseFloat() which runs multiple sanity checks and does error handling. Is it 
+simple to just read the 4 characters, skip the decimal and then return back the 
+three characters in the form of an integer. In the final display, a decimal 
+point can be added.
+
+The mean timing came down to 31.5s
+
 ## Attempt 14 - Custom Scanner
 
-## Attempt 15 - Swiss Map and DJB2 Hashing
+Next up, according to the flamegraph, a lot of time gets wasted in the default 
+scanner being used. This is the next site of optimization.
 
-## Attempt 16 - Reducing Channel Communication Overhead with Worker Reading
+The scanner has mostly become redundant and its existance is causing unnecessary 
+allocation on the heap. Also, the allocation happens for every line on input.
 
-## Attempt 17 - Delete the Name and Temperature Buffers
+Here, the implementation remains straight forward. The idea is inspired from 
+the parseLine() function. Previously, we were working with \n and then splitting 
+around ;. Now, we are doing the same but also skipping the decimal point and 
+returning the index of the next spot to start reading
+
+The GC pressure is much lower now as we are managing the reading index ourselves 
+as it is just an integer. Prevously the scanner was maintaining internal state  
+on the heap that had to be deallocated, now we are just overwriting.
+
+The observations are as follows: 27.12, 27.14, 27.97, 27.50. So we can say that 
+27.5 is a good estimate to play with.
+
+## Attempt 15 - Reducing Channel Communication Overhead with Worker Reading
+
+## Attempt 16 - Delete the Name and Temperature Buffers

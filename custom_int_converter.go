@@ -10,9 +10,6 @@ func bytesToInt(byteArray []byte) int {
 			negative = true
 			continue
 		}
-		if b == 46 { // skip the decimal point
-			continue
-		}
 		// For each new number, move the old number one digit to left; byte shifting
 		result = result*10 + int(b-48) // 48 = '0', 49 = '1', ...
 	}
