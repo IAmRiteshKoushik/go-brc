@@ -112,5 +112,11 @@ func main() {
 		bufferSize := 100
 		attempThirteen(workerCount, bufferSize)
 		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
+	case "14":
+		start := time.Now()
+		workerCount := 10
+		bufferSize := 100
+		attempFourteen(workerCount, bufferSize)
+		fmt.Printf("\t%0.2f", time.Since(start).Seconds())
 	}
 }
